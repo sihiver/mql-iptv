@@ -4,9 +4,9 @@ After=network.target
 
 [Service]
 Type=simple
-User=dindin
-WorkingDirectory=/home/dindin/iptv-server
-ExecStart=/usr/bin/node /home/dindin/iptv-server/server.js
+User=CURRENT_USER
+WorkingDirectory=/path/to/project
+ExecStart=/usr/bin/node /path/to/project/server.js
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -14,7 +14,7 @@ StandardError=journal
 SyslogIdentifier=iptv-server
 
 # Environment file (create from .env.example)
-EnvironmentFile=-/home/dindin/iptv-server/.env
+EnvironmentFile=-/path/to/project/.env
 
 # Default environment (override via .env file)
 Environment=NODE_ENV=production
