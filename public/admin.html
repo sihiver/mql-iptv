@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPTV Rebroadcast Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-satellite-dish"></i>
+                <div>
+                    <h1>IPTV Rebroadcast Admin Panel</h1>
+                    <p>Ubuntu Server - Auto On-Demand with Database</p>
+                </div>
+            </div>
+            <div class="server-info">
+                <div class="info-card">
+                    <div class="info-value" id="server-status">
+                        <i class="fas fa-circle" style="color: #4CAF50;"></i> Online
+                    </div>
+                    <div class="info-label">Server Status</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-value" id="active-streams">0</div>
+                    <div class="info-label">Active Streams</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-value" id="connected-clients">0</div>
+                    <div class="info-label">Clients</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-value" id="total-channels">0</div>
+                    <div class="info-label">Total Channels</div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Statistics Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-total-channels">0</div>
+                <div class="stat-label">Total Channels</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-active-streams">0</div>
+                <div class="stat-label">Active Streams</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-total-clients">0</div>
+                <div class="stat-label">Total Clients</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-today-clients">0</div>
+                <div class="stat-label">Today's Clients</div>
+            </div>
+        </div>
+        
+        <!-- Bandwidth Stats -->
+        <div class="bandwidth-stats">
+            <div class="bandwidth-card">
+                <div class="stat-value" id="bandwidth-savings">0 Mbps</div>
+                <div class="stat-label">Bandwidth Saved</div>
+            </div>
+            <div class="bandwidth-card">
+                <div class="stat-value" id="savings-percentage">0%</div>
+                <div class="stat-label">Efficiency</div>
+            </div>
+            <div class="bandwidth-card">
+                <div class="stat-value" id="potential-bandwidth">0 Mbps</div>
+                <div class="stat-label">Without Cache</div>
+            </div>
+            <div class="bandwidth-card">
+                <div class="stat-value" id="actual-bandwidth">0 Mbps</div>
+                <div class="stat-label">With Cache</div>
+            </div>
+        </div>
+        
+        <!-- Bandwidth Chart -->
+        <div class="chart-container">
+            <h3>Bandwidth Savings Over Time</h3>
+            <div class="chart-wrapper">
+                <canvas id="bandwidthChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Dashboard -->
+        <div class="dashboard">
+            <!-- Playlist Management Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Playlist Management</h2>
+                    <button class="btn btn-primary" id="generate-playlist">
+                        <i class="fas fa-file-export"></i> Generate M3U8
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="tabs">
+                        <div class="tab active" data-tab="playlist-tab">Playlist</div>
+                        <div class="tab" data-tab="clients-tab">Connected Devices</div>
+                        <div class="tab" data-tab="import-tab">Import M3U</div>
+                    </div>
+                    
+                    <div class="tab-content active" id="playlist-tab">
+                        <div class="playlist-url" id="playlist-url-display">
+                            http://localhost:3000/playlist.m3u8?token=default123
+                        </div>
+                        <div class="form-group">
+                            <label for="playlist-name">Playlist Name</label>
+                            <input type="text" id="playlist-name" value="My IPTV Playlist">
+                        </div>
+                        <div class="form-group">
+                            <label for="playlist-token">Security Token</label>
+                            <input type="text" id="playlist-token" value="default123">
+                        </div>
+                        <button class="btn btn-success" id="update-playlist">
+                            <i class="fas fa-sync"></i> Update Playlist
+                        </button>
+                    </div>
+                    
+                    <div class="tab-content" id="clients-tab">
+                        <div class="client-list" id="connected-devices-list">
+                            <div class="client-item">
+                                <div class="client-info">
+                                    <span>Client data will appear here when available</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="import-tab">
+                        <div class="form-group">
+                            <label for="m3u-url">URL Playlist M3U</label>
+                            <input type="text" id="m3u-url" placeholder="https://example.com/playlist.m3u">
+                        </div>
+                        <div class="form-group">
+                            <label for="m3u-content">Or paste M3U content</label>
+                            <textarea id="m3u-content" rows="10" placeholder="Paste M3U content here..."></textarea>
+                        </div>
+                        <button class="btn btn-primary" id="import-m3u">
+                            <i class="fas fa-download"></i> Import Channels
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Channel Configuration Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Channel Configuration</h2>
+                    <button class="btn btn-primary" id="add-channel">
+                        <i class="fas fa-plus"></i> Add Channel
+                    </button>
+                </div>
+                <div class="card-content">
+                    <div class="form-group">
+                        <label for="channel-name">Channel Name</label>
+                        <input type="text" id="channel-name" placeholder="Enter channel name">
+                    </div>
+                    <div class="form-group">
+                        <label for="source-url">Source URL (Provider)</label>
+                        <input type="text" id="source-url" placeholder="Enter source stream URL from provider">
+                    </div>
+                    <div class="form-group">
+                        <label for="channel-category">Category</label>
+                        <select id="channel-category">
+                            <option value="news">News</option>
+                            <option value="entertainment">Entertainment</option>
+                            <option value="sports">Sports</option>
+                            <option value="movies">Movies</option>
+                            <option value="kids">Kids</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="channel-logo">Logo URL (optional)</label>
+                        <input type="text" id="channel-logo" placeholder="URL logo channel">
+                    </div>
+                    <div class="form-group">
+                        <label for="channel-bitrate">Bitrate (kbps)</label>
+                        <input type="number" id="channel-bitrate" value="2000">
+                    </div>
+                    <div class="form-group">
+                        <label for="channel-resolution">Resolution</label>
+                        <select id="channel-resolution">
+                            <option value="480p">480p</option>
+                            <option value="720p" selected>720p</option>
+                            <option value="1080p">1080p</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-success" id="save-channel">
+                        <i class="fas fa-save"></i> Save Channel
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Channel List Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="select-all-channels" style="width: 18px; height: 18px;">
+                        <span>Channel List</span>
+                    </label>
+                </h2>
+                <div>
+                    <button class="btn btn-danger" id="delete-selected" style="display: none;">
+                        <i class="fas fa-trash-alt"></i> Delete Selected (<span id="selected-count">0</span>)
+                    </button>
+                    <button class="btn btn-warning" id="refresh-channels">
+                        <i class="fas fa-redo"></i> Refresh
+                    </button>
+                    <button class="btn btn-danger" id="stop-all">
+                        <i class="fas fa-stop"></i> Stop All
+                    </button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="channel-list" id="channel-list-container">
+                    <div class="channel-item">
+                        <div class="channel-info">
+                            <span>Loading channels...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Logs Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">System Logs</h2>
+                <div>
+                    <button class="btn btn-info" id="refresh-logs">
+                        <i class="fas fa-sync"></i> Refresh Logs
+                    </button>
+                    <button class="btn btn-warning" id="clear-logs">
+                        <i class="fas fa-trash"></i> Clear Logs
+                    </button>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="tabs">
+                    <div class="tab active" data-tab="system-logs-tab">System Logs</div>
+                    <div class="tab" data-tab="stream-logs-tab">Stream Logs</div>
+                </div>
+                
+                <div class="tab-content active" id="system-logs-tab">
+                    <div class="logs-container" id="system-logs-container">
+                        <div class="log-entry">Loading system logs...</div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="stream-logs-tab">
+                    <div class="logs-container" id="stream-logs-container">
+                        <div class="log-entry">Loading stream logs...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>IPTV Rebroadcast System &copy; 2023 | Ubuntu Server with Database | Auto On-Demand Streaming</p>
+        </footer>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification" class="notification"></div>
+
+    <!-- JavaScript Files -->
+    <script src="js/utils.js"></script>
+    <script src="js/stats.js"></script>
+    <script src="js/channels.js"></script>
+    <script src="js/logs.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

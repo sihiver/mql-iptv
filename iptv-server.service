@@ -1,0 +1,28 @@
+[Unit]
+Description=IPTV Rebroadcast Server
+After=network.target
+
+[Service]
+Type=simple
+User=dindin
+WorkingDirectory=/home/dindin/iptv-server
+ExecStart=/usr/bin/node /home/dindin/iptv-server/server.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=iptv-server
+
+# Environment file (create from .env.example)
+EnvironmentFile=-/home/dindin/iptv-server/.env
+
+# Default environment (override via .env file)
+Environment=NODE_ENV=production
+Environment=PORT=3000
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=512
+
+[Install]
+WantedBy=multi-user.target
